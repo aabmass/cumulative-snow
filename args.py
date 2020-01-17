@@ -6,6 +6,7 @@ from typing import Optional, Sequence, Text
 @dataclass
 class Args:
     csv_path: str
+    output_path: Optional[str]
 
 
 def _get_parser() -> ArgumentParser:
@@ -15,6 +16,7 @@ def _get_parser() -> ArgumentParser:
     parser.add_argument(
         "csv_path", help="Path to the CSV file containing daily snowfall recordings"
     )
+    parser.add_argument("--output_path", help="Path to save the figure to, pdf")
     return parser
 
 

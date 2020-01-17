@@ -2,20 +2,20 @@ from args import Args
 import load_data
 import numpy as np
 import matplotlib.pyplot as pl
-import matplotlib.dates as mdates
 import pandas as pd
 
 
 def _init_matplotlib_config() -> None:
     small_size = 10
+    medium_size = 16
     bigger_size = 24
     pl.style.use("ggplot")
     pl.rc("font", size=small_size)
     pl.rc("axes", titlesize=small_size)
-    pl.rc("axes", labelsize=bigger_size)
+    pl.rc("axes", labelsize=bigger_size, titlesize=bigger_size)
     pl.rc("xtick", labelsize=small_size)
     pl.rc("ytick", labelsize=small_size)
-    pl.rc("legend", fontsize=small_size)
+    pl.rc("legend", fontsize=8)
     pl.rc("figure", titlesize=bigger_size)
 
 
@@ -37,8 +37,14 @@ def plot_cumulative_annual(args: Args) -> None:
     for year, data_per_year in data_grouped_by_year:
         data_per_year["SNOW"].cumsum().plot(ax=ax_top, label=year.year)
 
+    fig.autofmt_xdate(rotation=70)
+    ax_top.legend()
+    ax_top.set_title("Cumulative Snow per Season (July-June)")
     ax_top.set_xlabel("Days")
     ax_top.set_ylabel("Snow (inches)")
-    ax_top.legend()
-    ax_top.xaxis.set_major_locator(mdates.YearLocator())
-    pl.show()
+
+    if args.output_path:
+        fig.set_size_inches(11, 8.5)
+        fig.savefig(args.output_path, format="pdf", bbox_inches="tight")
+    else:
+        pl.show()
