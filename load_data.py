@@ -24,6 +24,7 @@ def load_noaa_data(file_path: str) -> pd.DataFrame:
             "WESD": _fill_zeroes,
             "WESF": _fill_zeroes,
         },
+        parse_dates=["DATE"],
     )
     res.set_index("DATE", inplace=True)
     return res
