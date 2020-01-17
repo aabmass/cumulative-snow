@@ -2,6 +2,7 @@ from args import Args
 import load_data
 import numpy as np
 import matplotlib.pyplot as pl
+import matplotlib.dates as mdates
 import pandas as pd
 
 
@@ -39,4 +40,5 @@ def plot_cumulative_annual(args: Args) -> None:
     ax_top.set_xlabel("Days")
     ax_top.set_ylabel("Snow (inches)")
     ax_top.legend()
+    ax_top.xaxis.set_major_locator(mdates.YearLocator())
     pl.show()
