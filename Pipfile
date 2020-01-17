@@ -10,6 +10,8 @@ black = "==19.10b0"
 [packages]
 numpy = "*"
 matplotlib = "*"
+pandas = "*"
+pyqt5 = "*"
 
 [requires]
 python_version = "3.8"
