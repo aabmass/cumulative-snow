@@ -23,4 +23,4 @@ pipenv run python main.py \
     --output_path=boston_logan.pdf
 ```
 
-The output graph will look [like this](https://github.com/aabmass/cumulative-snow/blob/master/boston_logan.pdf).
+The output plot will look [like this](https://github.com/aabmass/cumulative-snow/blob/master/boston_logan.pdf): ![Boston Logan](./boston_logan.svg)
