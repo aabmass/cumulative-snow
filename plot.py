@@ -36,13 +36,15 @@ def plot_cumulative_annual(args: Args) -> None:
     print(data.describe())
 
     # Add more subplots here
-    fig, (ax_top) = pl.subplots(1, 1)
+    fig, (ax_top, ax_bottom) = pl.subplots(2, 1)
 
     cumulative_snow = data[["WINTER_YEAR", "SNOW"]].groupby(["WINTER_YEAR"]).cumsum()
+    cumulative_snow["WINTER_YEAR"] = data["WINTER_YEAR"]
     cumulative_snow_per_year = cumulative_snow.groupby(data["WINTER_YEAR"].dt.year)[
         "SNOW"
     ]
     cumulative_snow_per_year.plot(ax=ax_top)
+    _plot_overlapping(ax_bottom, cumulative_snow)
 
     fig.autofmt_xdate(rotation=70)
     ax_top.legend()
@@ -57,7 +59,25 @@ def plot_cumulative_annual(args: Args) -> None:
         pl.show()
 
 
-def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
-    month_index = data.index.strftime("%b")
-    data["SNOW"]
+def _plot_overlapping(ax: pl.Axes, cumulative_data: pd.DataFrame) -> None:
+    # Create a new index adjusted to be all in the same year (ignore the
+    # specific year) by normalizing to timedelta since start of winter year
+    # then adding it to an arbitrary year.
+    deltas = cumulative_data.index - cumulative_data["WINTER_YEAR"]
+    index_same_year = (
+        pd.Timestamp(year=2000, day=1, month=7) + deltas - pd.Timedelta(days=1)
+    )
+
+    # Update winter year to be just the year int, for column labels after pivot
+    data_overlapping = cumulative_data.assign(
+        WINTER_YEAR=cumulative_data["WINTER_YEAR"].dt.year
+    )
+    data_overlapping.set_index(index_same_year, inplace=True)
+
+    # Pivot WINTER_YEAR to be the new columns
+    data_overlapping = data_overlapping.pivot(columns="WINTER_YEAR", values="SNOW")
+
+    # Update index with formatted Mon-Day
+    data_overlapping.set_index(data_overlapping.index.strftime("%b %-d"), inplace=True)
+    data_overlapping.plot(ax=ax)
 
