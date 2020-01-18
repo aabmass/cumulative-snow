@@ -36,14 +36,17 @@ def plot_cumulative_annual(args: Args) -> None:
     print(data.describe())
 
     # Add more subplots here
-    fig, ax_top = pl.subplots(1, 1)
+    fig, (ax_top) = pl.subplots(1, 1)
 
-    for year, data_per_year in data.groupby("WINTER_YEAR"):
-        data_per_year["SNOW"].cumsum().plot(ax=ax_top, label=year.year)
+    cumulative_snow = data[["WINTER_YEAR", "SNOW"]].groupby(["WINTER_YEAR"]).cumsum()
+    cumulative_snow_per_year = cumulative_snow.groupby(data["WINTER_YEAR"].dt.year)[
+        "SNOW"
+    ]
+    cumulative_snow_per_year.plot(ax=ax_top)
 
     fig.autofmt_xdate(rotation=70)
     ax_top.legend()
-    ax_top.set_title("Cumulative Snow per Season (July-June)")
+    ax_top.set_title("Cumulative Snow per Winter Season (July-June)")
     ax_top.set_xlabel("Days")
     ax_top.set_ylabel("Snow (inches)")
 
@@ -52,3 +55,9 @@ def plot_cumulative_annual(args: Args) -> None:
         fig.savefig(args.output_path, format="pdf", bbox_inches="tight")
     else:
         pl.show()
+
+
+def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
+    month_index = data.index.strftime("%b")
+    data["SNOW"]
+

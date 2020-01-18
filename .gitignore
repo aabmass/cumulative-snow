@@ -5,3 +5,4 @@ __pycache__/
 !boston_logan.pdf
 !datasets/boston_logan_snowfall.csv
 datasets/*
+*.ipynb*
