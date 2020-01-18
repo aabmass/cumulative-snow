@@ -6,7 +6,7 @@ def load_noaa_data(file_path: str) -> pd.DataFrame:
     """Loads NOAA data from file path.
 
     Output dataframe has columns:
-    - DATE = Date of measurement(index as well)
+    - WINTER_YEAR = The year the winter started in
     - STATION = Station number?
     - NAME = Station name
     - SNOW = Snowfall (inches)
@@ -16,7 +16,7 @@ def load_noaa_data(file_path: str) -> pd.DataFrame:
 
     Additional dataset documentation: https://bit.ly/2Rs3Xyb
     """
-    res = pd.read_csv(
+    data = pd.read_csv(
         file_path,
         converters={
             "SNOW": _fill_zeroes,
@@ -26,8 +26,14 @@ def load_noaa_data(file_path: str) -> pd.DataFrame:
         },
         parse_dates=["DATE"],
     )
-    res.set_index("DATE", inplace=True)
-    return res
+    data.set_index("DATE", inplace=True)
+
+    # Assigns year periods as being from July to the end of June e.g. winter of
+    # 2010 is July 2009 through June 2019
+    offset = pd.tseries.offsets.YearEnd(month=6)
+    data["WINTER_YEAR"] = data.index - offset
+
+    return data
 
 
 def _fill_zeroes(s: str) -> float:
