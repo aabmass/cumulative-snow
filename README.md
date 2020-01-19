@@ -16,7 +16,7 @@ pipenv run python main.py --help
 # Plot and show matplotlib window
 pipenv run python main.py datasets/boston_logan_snowfall.csv
 
-# Or save as pdf
+# Or save as an image (add the extension you want)
 pipenv run python main.py \
     datasets/boston_logan_snowfall.csv \
     --start_year=2010 \
