@@ -14,7 +14,6 @@ def main() -> None:
             .sort_values(by="SNOW", ascending=False)
             .rename({"SNOW": "Number of Datapoints"}, axis="columns")
         )
-        # print(data[["STATION", "NAME"]].drop_duplicates().reset_index())
     else:
         plot.plot_cumulative_annual(args)
 
