@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Sequence, Text
+from typing import Optional, Sequence, Text, Set
 
 
 @dataclass
@@ -10,6 +10,8 @@ class Args:
     output_path: Optional[str]
     start_year: Optional[int]
     end_year: Optional[int]
+    station: Optional[str]
+    list_stations: bool
 
 
 def _get_parser() -> ArgumentParser:
@@ -26,6 +28,15 @@ def _get_parser() -> ArgumentParser:
         "--start_year", type=_parse_year, help="Year to start analysis for"
     )
     parser.add_argument("--end_year", type=_parse_year, help="Year to end analysis for")
+    parser.add_argument(
+        "--station", help="Filter to only include this station if the csv has multiples"
+    )
+    parser.add_argument(
+        "--list_stations",
+        action="store_true",
+        help="List stations and numbers of datapoints for each station in the csv "
+        "file and exit",
+    )
     return parser
 
 

@@ -1,8 +1,9 @@
 import pandas as pd
 from typing import Union
+from args import Args
 
 
-def load_noaa_data(file_path: str) -> pd.DataFrame:
+def load_noaa_data(args: Args) -> pd.DataFrame:
     """Loads NOAA data from file path.
 
     Output dataframe has columns:
@@ -17,7 +18,7 @@ def load_noaa_data(file_path: str) -> pd.DataFrame:
     Additional dataset documentation: https://bit.ly/2Rs3Xyb
     """
     data = pd.read_csv(
-        file_path,
+        args.csv_path,
         converters={
             "SNOW": _fill_zeroes,
             "SNWD": _fill_zeroes,
@@ -32,6 +33,8 @@ def load_noaa_data(file_path: str) -> pd.DataFrame:
     # 2010 is July 2009 through June 2019
     offset = pd.tseries.offsets.YearEnd(month=6)
     data["WINTER_YEAR"] = data.index - offset
+    if args.station:
+        data = data[data["STATION"] == args.station]
 
     return data
 
