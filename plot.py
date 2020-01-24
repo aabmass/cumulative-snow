@@ -50,7 +50,7 @@ def plot_cumulative_annual(args: Args) -> None:
         )
     )
     if args.output_path:
-        fig.set_size_inches(11, 8.5)
+        fig.set_size_inches(8.5, 11)
         fig.savefig(args.output_path, bbox_inches="tight")
     else:
         pl.show()
