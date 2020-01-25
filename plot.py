@@ -90,15 +90,13 @@ def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
     # Pivot WINTER_YEAR to be the new columns
     data_overlapping = data_overlapping.pivot(columns="WINTER_YEAR", values="SNOW")
 
-    # Update index with formatted Mon-Day
-    # data_overlapping.set_index(data_overlapping.index.strftime("%b %-d"), inplace=True)
-    res = data_overlapping.plot(ax=ax)
+    # Plot
+    data_overlapping.plot(ax=ax)
 
     ax.set_xlabel("Month")
     ax.set_ylabel("Snowfall (inches)")
-    # Set the locator
-    locator = mdates.MonthLocator()  # every month
-    # Specify the format - %b gives us Jan, Feb...
+    # Put a major tick per month
+    locator = mdates.MonthLocator()
     fmt = mdates.DateFormatter("%b")
     ax.get_xaxis().set_major_locator(locator)
     ax.get_xaxis().set_major_formatter(fmt)
@@ -133,9 +131,8 @@ def _plot_monthly_averages(ax: pl.Axes, data: pd.DataFrame) -> None:
         secondary_y=[col for col in avg_per_month.columns if col != "Cumulative Snow"],
     )
 
-    secondary_y_ax = [
-        a for a in ax.figure.axes if a != ax and a.bbox.bounds == ax.bbox.bounds
-    ][0]
+    ax.grid(True)
+    ax.right_ax.grid(False)
     ax.set_xlabel("Month")
     ax.set_ylabel("Snowfall (Inches)")
-    secondary_y_ax.set_ylabel("Temperature (F)")
+    ax.right_ax.set_ylabel("Temperature (F)")
