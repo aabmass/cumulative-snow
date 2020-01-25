@@ -1,6 +1,6 @@
-from args import parse_args
-import plot
 import load_data
+import plot
+from args import parse_args
 
 
 def main() -> None:

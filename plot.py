@@ -1,11 +1,12 @@
-from args import Args
-import load_data
-import numpy as np
 import textwrap
-import matplotlib.pyplot as pl
+
 import matplotlib.dates as mdates
+import matplotlib.pyplot as pl
 import numpy as np
 import pandas as pd
+
+import load_data
+from args import Args
 
 
 def _init_matplotlib_config() -> None:
@@ -138,4 +139,3 @@ def _plot_monthly_averages(ax: pl.Axes, data: pd.DataFrame) -> None:
     ax.set_xlabel("Month")
     ax.set_ylabel("Snowfall (Inches)")
     secondary_y_ax.set_ylabel("Temperature (F)")
-

@@ -1,5 +1,7 @@
-import pandas as pd
 from typing import Union
+
+import pandas as pd
+
 from args import Args
 
 
