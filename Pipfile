@@ -6,12 +6,14 @@ verify_ssl = true
 [dev-packages]
 mypy = "*"
 black = "==19.10b0"
+numpy-stubs = {git = "https://github.com/numpy/numpy-stubs.git"}
 
 [packages]
 numpy = "*"
 matplotlib = "*"
 pandas = "*"
 pyqt5 = "*"
+numpy-stubs = {git = "https://github.com/numpy/numpy-stubs.git"}
 
 [requires]
 python_version = "3.8"

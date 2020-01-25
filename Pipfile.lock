@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "43044aaf9bd384a668b075d171d75dd6935374680eb25158e341d6e0a686b5fb"
+            "sha256": "58cc7ad0e2df33a814a09acb49e60fad8aeaea437fb2b0123c1699e79b9bb12a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -110,6 +110,10 @@
             ],
             "index": "pypi",
             "version": "==1.18.1"
+        },
+        "numpy-stubs": {
+            "git": "https://github.com/numpy/numpy-stubs.git",
+            "ref": "f3c6315738489983f5f37e1477ac68373d71b470"
         },
         "pandas": {
             "hashes": [
@@ -254,6 +258,10 @@
                 "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"
             ],
             "version": "==0.4.3"
+        },
+        "numpy-stubs": {
+            "git": "https://github.com/numpy/numpy-stubs.git",
+            "ref": "f3c6315738489983f5f37e1477ac68373d71b470"
         },
         "pathspec": {
             "hashes": [
