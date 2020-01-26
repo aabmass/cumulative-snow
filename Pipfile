@@ -7,6 +7,8 @@ verify_ssl = true
 mypy = "*"
 black = "==19.10b0"
 numpy-stubs = {git = "https://github.com/numpy/numpy-stubs.git"}
+pynvim = "*"
+jedi = "*"
 
 [packages]
 numpy = "*"
