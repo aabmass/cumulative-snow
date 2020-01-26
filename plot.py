@@ -5,6 +5,7 @@ import matplotlib.pyplot as pl
 import numpy as np
 import pandas as pd
 
+import label_lines
 import load_data
 from args import Args
 
@@ -66,7 +67,7 @@ def _plot_continuous(ax: pl.Axes, data: pd.DataFrame) -> None:
     cumulative_snow_per_year.plot(ax=ax)
     ax.set_xlabel("Date")
     ax.set_ylabel("Snowfall (inches)")
-    ax.legend()
+    label_lines.label_all(ax)
 
 
 def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
@@ -91,8 +92,9 @@ def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
     data_overlapping = data_overlapping.pivot(columns="WINTER_YEAR", values="SNOW")
 
     # Plot
-    data_overlapping.plot(ax=ax)
+    data_overlapping.plot(ax=ax, legend=False)
 
+    label_lines.label_all(ax, xoffset=0.0, yoffset=-0.02, fontsize=6)
     ax.set_xlabel("Month")
     ax.set_ylabel("Snowfall (inches)")
     # Put a major tick per month
