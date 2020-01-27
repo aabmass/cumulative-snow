@@ -1,6 +1,7 @@
-import load_data
-import plot
-from args import parse_args
+#!/usr/bin/env python
+
+from cumulative_snow import load_data, plot
+from cumulative_snow.args import parse_args
 
 
 def main() -> None:

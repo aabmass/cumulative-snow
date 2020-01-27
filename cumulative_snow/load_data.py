@@ -2,7 +2,7 @@ from typing import Union
 
 import pandas as pd
 
-from args import Args
+from cumulative_snow.args import Args
 
 
 def load_noaa_data(args: Args) -> pd.DataFrame:

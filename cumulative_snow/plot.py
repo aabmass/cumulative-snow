@@ -5,9 +5,8 @@ import matplotlib.pyplot as pl
 import numpy as np
 import pandas as pd
 
-import label_lines
-import load_data
-from args import Args
+from cumulative_snow import label_lines, load_data
+from cumulative_snow.args import Args
 
 
 def _init_matplotlib_config() -> None:

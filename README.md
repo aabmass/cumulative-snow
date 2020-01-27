@@ -11,13 +11,13 @@ Download a data set from [NOAA](https://www.ncdc.noaa.gov/cdo-web/search?dataset
 pipenv install
 
 # Usage
-pipenv run python main.py --help
+pipenv run python -m cumulative_snow.main --help
 
 # Plot and show matplotlib window
 pipenv run python main.py datasets/boston_logan_snowfall.csv
 
 # Or save as an image (add the extension you want)
-pipenv run python main.py \
+pipenv run python -m cumulative_snow.main \
     datasets/boston_logan_snowfall.csv \
     --start_year=2010 \
     --output_path=boston_logan.pdf

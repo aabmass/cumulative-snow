@@ -6,3 +6,6 @@ __pycache__/
 !datasets/boston_logan_snowfall.csv
 datasets/*
 *.ipynb*
+cumulative_snow.egg-info/
+dist/
+build/
