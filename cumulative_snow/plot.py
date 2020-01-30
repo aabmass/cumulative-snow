@@ -4,9 +4,12 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as pl
 import numpy as np
 import pandas as pd
+from matplotlib.cm import get_cmap
 
-from cumulative_snow import label_lines, load_data
+from cumulative_snow import label_lines, load_data, pd_util
 from cumulative_snow.args import Args
+
+COLORMAP = "tab20b"
 
 
 def _init_matplotlib_config() -> None:
@@ -60,13 +63,17 @@ def plot_cumulative_annual(args: Args) -> None:
 def _plot_continuous(ax: pl.Axes, data: pd.DataFrame) -> None:
     cumulative_snow = data[["WINTER_YEAR", "SNOW"]].groupby(["WINTER_YEAR"]).cumsum()
     cumulative_snow["WINTER_YEAR"] = data["WINTER_YEAR"]
-    cumulative_snow_per_year = cumulative_snow.groupby(data["WINTER_YEAR"].dt.year)[
-        "SNOW"
-    ]
-    cumulative_snow_per_year.plot(ax=ax)
+    cumulative_snow_per_year = cumulative_snow.pivot(
+        columns="WINTER_YEAR", values="SNOW"
+    )
+    cumulative_snow_per_year.columns = cumulative_snow_per_year.columns.year
+    # cumulative_snow_per_year = cumulative_snow.groupby(data["WINTER_YEAR"].dt.year)[
+    #     "SNOW"
+    # ]
+    cumulative_snow_per_year.plot(ax=ax, colormap=COLORMAP, legend=False)
     ax.set_xlabel("Date")
     ax.set_ylabel("Snowfall (inches)")
-    label_lines.label_all(ax)
+    label_lines.label_all(ax, alpha=0.75)
 
 
 def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
@@ -91,9 +98,9 @@ def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
     data_overlapping = data_overlapping.pivot(columns="WINTER_YEAR", values="SNOW")
 
     # Plot
-    data_overlapping.plot(ax=ax, legend=False)
+    data_overlapping.plot(ax=ax, legend=False, colormap=COLORMAP)
 
-    label_lines.label_all(ax, xoffset=0.0, yoffset=-0.02, fontsize=6)
+    label_lines.label_all(ax, xoffset=0.0, yoffset=-0.02, fontsize=6, alpha=0.75)
     ax.set_xlabel("Month")
     ax.set_ylabel("Snowfall (inches)")
     # Put a major tick per month
@@ -111,25 +118,34 @@ def _plot_monthly_averages(ax: pl.Axes, data: pd.DataFrame) -> None:
     )
 
     # Average these things by month over all years
-    avg_per_month = data.groupby(data.index.month).mean()[
-        ["Cumulative Snow", "TAVG", "TMAX", "TMIN"]
-    ]
+    data_per_month = (
+        data[["Cumulative Snow", "TAVG", "TMAX", "TMIN"]]
+        .groupby(data.index.month)
+        .agg(["mean", "std"])
+    )
 
     # This is to cycle the whole DF so July is at the start
     dummy_sort_key = "dummy"
-    avg_per_month[dummy_sort_key] = np.roll(avg_per_month.index, 6)
-    avg_per_month.sort_values(dummy_sort_key, inplace=True)
-    avg_per_month.drop(dummy_sort_key, axis=1, inplace=True)
+    data_per_month[dummy_sort_key] = np.roll(data_per_month.index, 6)
+    data_per_month.sort_values((dummy_sort_key,), inplace=True)
+    data_per_month.drop((dummy_sort_key,), inplace=True, axis=1)
+    # This is a hack for pandas. Pandas doesn't update columns.levels so I am
+    # forcing a copy of the index
+    data_per_month.columns = pd.MultiIndex.from_tuples(
+        data_per_month.columns.to_flat_index()
+    )
 
     # Replace index month numbers with month names
-    avg_per_month.set_index(
-        pd.to_datetime(avg_per_month.index, format="%m").strftime("%b"), inplace=True,
+    data_per_month.set_index(
+        pd.to_datetime(data_per_month.index, format="%m").strftime("%b"), inplace=True,
     )
 
     # Plot
-    avg_per_month.plot.bar(
+    data_per_month, err_per_month = pd_util.unzip_mean_and_std(data_per_month)
+    data_per_month.plot.bar(
         ax=ax,
-        secondary_y=[col for col in avg_per_month.columns if col != "Cumulative Snow"],
+        yerr=err_per_month,
+        secondary_y=[col for col in data_per_month.columns if col != "Cumulative Snow"],
     )
 
     ax.grid(True)
