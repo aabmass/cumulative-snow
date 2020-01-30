@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, Dict
 
 import matplotlib.pyplot as pl
 import numpy as np
@@ -11,6 +11,7 @@ def label_all(
     xoffset: float = -0.01,
     yoffset: float = 0.03,
     x_to_float: Callable[[Any], float] = None,
+    **kwargs: Any,
 ) -> None:
     """Label all lines in the axes
 
@@ -25,8 +26,9 @@ def label_all(
         xdata, ydata = line.get_data(orig=True)
 
         # x, y in data coordinates
-        x = x_to_float(xdata[-1])
-        y = ydata[~np.isnan(ydata)][-1]
+        nonnan_mask = ~np.isnan(ydata)
+        x = x_to_float(xdata[nonnan_mask][-1])
+        y = ydata[nonnan_mask][-1]
 
         # x, y in axes coordinates
         x, y = data_to_axes.transform((x_to_float(x), y))
@@ -36,6 +38,7 @@ def label_all(
             line.get_label(),
             transform=ax.transAxes,
             fontsize=fontsize,
+            **kwargs,
         )
 
 
