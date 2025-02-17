@@ -7,4 +7,7 @@ requires-python = ">=3.10"
 dependencies = ["matplotlib>=3.10.0", "numpy>=2.2.3", "pandas>=2.2.3"]
 
 [dependency-groups]
-dev = ["pyqt5>=5.15.11"]
+dev = [
+    "pyqt5>=5.15.11",
+    "ruff>=0.9.6",
+]

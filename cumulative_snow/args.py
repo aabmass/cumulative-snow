@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Sequence, Set, Text
+from typing import Optional, Sequence, Text
 
 
 @dataclass

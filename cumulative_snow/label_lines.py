@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 import matplotlib.pyplot as pl
 import numpy as np
@@ -32,7 +32,7 @@ def label_all(
 
         # x, y in axes coordinates
         x, y = data_to_axes.transform((x_to_float(x), y))
-        text = ax.text(
+        ax.text(
             x + xoffset,
             y + yoffset,
             line.get_label(),
