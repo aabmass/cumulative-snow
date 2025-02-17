@@ -4,8 +4,7 @@ version = "0.1.0"
 description = "Graph cumulative snow from NOAA data"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "matplotlib>=3.10.0",
-    "numpy<2",
-    "pandas<2",
-]
+dependencies = ["matplotlib>=3.10.0", "numpy>=2.2.3", "pandas>=2.2.3"]
+
+[dependency-groups]
+dev = ["pyqt5>=5.15.11"]
