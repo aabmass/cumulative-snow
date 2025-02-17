@@ -111,7 +111,7 @@ def _plot_monthly_averages(ax: pl.Axes, data: pd.DataFrame) -> None:
     )
 
     # Average these things by month over all years
-    avg_per_month = data.groupby(data.index.month).mean()[
+    avg_per_month = data.groupby([data.index.month]).mean(numeric_only=True)[
         ["Cumulative Snow", "TAVG", "TMAX", "TMIN"]
     ]
 
@@ -123,7 +123,8 @@ def _plot_monthly_averages(ax: pl.Axes, data: pd.DataFrame) -> None:
 
     # Replace index month numbers with month names
     avg_per_month.set_index(
-        pd.to_datetime(avg_per_month.index, format="%m").strftime("%b"), inplace=True,
+        pd.to_datetime(avg_per_month.index, format="%m").strftime("%b"),
+        inplace=True,
     )
 
     # Plot

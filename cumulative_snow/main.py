@@ -17,7 +17,3 @@ def main() -> None:
         )
     else:
         plot.plot_cumulative_annual(args)
-
-
-if __name__ == "__main__":
-    main()
