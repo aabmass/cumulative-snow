@@ -1,4 +1,3 @@
-
 import pandas as pd
 
 from cumulative_snow.args import Args
@@ -28,12 +27,18 @@ def load_noaa_data(args: Args) -> pd.DataFrame:
         },
         parse_dates=["DATE"],
     )
-    data.set_index("DATE", inplace=True)
 
     # Assigns year periods as being from July to the end of June e.g. winter of
     # 2010 is July 2009 through June 2019
     offset = pd.tseries.offsets.YearEnd(month=6)
-    data["WINTER_YEAR"] = data.index - offset
+    data["WINTER_SEASON_START"] = data["DATE"] - offset
+
+    # Pretty printable year the winter started in
+    data["WINTER_YEAR"] = (data["DATE"] - offset).dt.year
+
+    # Cumulative snow for the year
+    data["CUMULATIVE_SNOW"] = data.groupby("WINTER_YEAR")["SNOW"].cumsum()
+
     if args.station:
         data = data[data["STATION"] == args.station]
 

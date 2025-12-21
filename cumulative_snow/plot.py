@@ -2,11 +2,17 @@ import textwrap
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as pl
+
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
 from cumulative_snow import label_lines, load_data
 from cumulative_snow.args import Args
+
+pd.options.plotting.backend = "plotly"
 
 
 def _init_matplotlib_config() -> None:
@@ -31,42 +37,45 @@ def plot_cumulative_annual(args: Args) -> None:
 
     bool_mask = pd.Series(True, data.index)
     if args.start_year:
-        bool_mask &= data["WINTER_YEAR"] >= args.start_year
+        bool_mask &= data["WINTER_YEAR"] >= args.start_year.year
     if args.end_year:
-        bool_mask &= data["WINTER_YEAR"] <= args.end_year
+        bool_mask &= data["WINTER_YEAR"] <= args.end_year.year
     data = data[bool_mask]
 
-    fig, (ax_top, ax_middle, ax_bottom) = pl.subplots(3, 1)
+    # fig, (ax_top, ax_middle, ax_bottom) = pl.subplots(3, 1)
+    # fig = make_subplots(rows=3, cols=1)
 
-    _plot_continuous(ax_top, data)
-    _plot_overlapping(ax_middle, data)
-    _plot_monthly_averages(ax_bottom, data)
+    continuous_fig = _plot_continuous(data)
+    # _plot_overlapping(ax_middle, data)
+    # _plot_monthly_averages(ax_bottom, data)
 
-    fig.suptitle(
-        textwrap.fill(
-            "Cumulative Snow per Winter Season at {} ({})".format(
-                data["NAME"][0], data["STATION"][0]
-            ),
-            width=50,
-        )
-    )
+    # fig.suptitle(
+    #     textwrap.fill(
+    #         "Cumulative Snow per Winter Season at {} ({})".format(
+    #             data["NAME"][0], data["STATION"][0]
+    #         ),
+    #         width=50,
+    #     )
+    # )
     if args.output_path:
-        fig.set_size_inches(8.5, 11)
-        fig.savefig(args.output_path, bbox_inches="tight")
+        continuous_fig.write_html(args.output_path, include_plotlyjs="cdn")
+        # fig.savefig(args.output_path, bbox_inches="tight")
     else:
         pl.show()
 
 
-def _plot_continuous(ax: pl.Axes, data: pd.DataFrame) -> None:
-    cumulative_snow = data[["WINTER_YEAR", "SNOW"]].groupby(["WINTER_YEAR"]).cumsum()
-    cumulative_snow["WINTER_YEAR"] = data["WINTER_YEAR"]
-    cumulative_snow_per_year = cumulative_snow.groupby(data["WINTER_YEAR"].dt.year)[
-        "SNOW"
-    ]
-    cumulative_snow_per_year.plot(ax=ax)
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Snowfall (inches)")
-    label_lines.label_all(ax)
+def _plot_continuous(data: pd.DataFrame) -> go.Figure:
+    # data = data.copy()
+    # data["CUMULATIVE_SNOW"] = data.groupby("WINTER_YEAR")["SNOW"].cumsum()
+
+    return px.line(
+        data,
+        x="DATE",
+        y="CUMULATIVE_SNOW",
+        color="WINTER_YEAR",
+        title="Cumulative Snow per Winter Season",
+        labels={"CUMULATIVE_SNOW": "Snowfall (inches)", "DATE": "Date"},
+    )
 
 
 def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:

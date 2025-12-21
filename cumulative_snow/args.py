@@ -8,8 +8,8 @@ from typing import Optional, Sequence, Text
 class Args:
     csv_path: str
     output_path: Optional[str]
-    start_year: Optional[int]
-    end_year: Optional[int]
+    start_year: Optional[datetime]
+    end_year: Optional[datetime]
     station: Optional[str]
     list_stations: bool
 
