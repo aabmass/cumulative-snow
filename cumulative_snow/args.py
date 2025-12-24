@@ -21,9 +21,7 @@ def _get_parser() -> ArgumentParser:
     parser.add_argument(
         "csv_path", help="Path to the CSV file containing daily snowfall recordings"
     )
-    parser.add_argument(
-        "--output_path", help="Path to save the figure to. Add the file extension"
-    )
+    parser.add_argument("--output_path", help="Path to save the HTML file.")
     parser.add_argument(
         "--start_year", type=_parse_year, help="Year to start analysis for"
     )

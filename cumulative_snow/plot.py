@@ -1,5 +1,4 @@
 from textwrap import dedent
-import matplotlib.pyplot as pl
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -10,6 +9,9 @@ from cumulative_snow.args import Args
 
 
 def plot_cumulative_annual(args: Args) -> None:
+    if not args.output_path:
+        return
+
     data = load_data.load_noaa_data(args)
 
     bool_mask = pd.Series(True, data.index)
@@ -28,31 +30,30 @@ def plot_cumulative_annual(args: Args) -> None:
     location_id = data["STATION"][first_idx]
     page_title = f"Cumulative Snow per Winter Season at {location_name} ({location_id})"
 
-    if args.output_path:
-        with open(args.output_path, "w") as f:
-            f.write(
-                dedent(f"""\
-                <html>
-                    <head>
-                        <title>{page_title}</title>
-                    </head>
-                    <body>
-                """)
+    with open(args.output_path, "w") as f:
+        f.write(
+            dedent(f"""\
+            <html>
+                <head>
+                    <title>{page_title}</title>
+                </head>
+                <body>
+                <h1>{page_title}</h1>
+            """)
+        )
+        for i, fig in enumerate(
+            [continuous_fig, overlapping_fig, monthly_averages_fig]
+        ):
+            # Include the JS engine only once to keep the file small
+            include_js = "cdn" if i == 0 else False
+            fig.write_html(
+                f,
+                default_height=600,
+                full_html=False,
+                include_plotlyjs=include_js,
             )
-            f.write(f"<h1>{page_title}</h1>")
-            for i, fig in enumerate(
-                [continuous_fig, overlapping_fig, monthly_averages_fig]
-            ):
-                # Include the JS engine only once to keep the file small
-                include_js = "cdn" if i == 0 else False
-                fig.write_html(
-                    f,
-                    default_height=600,
-                    full_html=False,
-                    include_plotlyjs=include_js,
-                )
 
-            f.write("</body></html>")
+        f.write("</body></html>")
 
 
 def _plot_continuous(data: pd.DataFrame) -> go.Figure:
@@ -134,7 +135,7 @@ def _plot_monthly_averages(data: pd.DataFrame) -> go.Figure:
     fig = px.bar(
         final_data,
         x=final_data.index,
-        y=["SNOW", "TMAX", "TAVG", "TMIN"],
+        y=["SNOW", "TAVG", "TMAX", "TMIN"],
         title="Monthly Averages",
         barmode="group",
         template="ggplot2",

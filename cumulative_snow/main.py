@@ -15,5 +15,10 @@ def main() -> None:
             .sort_values(by="SNOW", ascending=False)
             .rename({"SNOW": "Number of Datapoints"}, axis="columns")
         )
-    else:
-        plot.plot_cumulative_annual(args)
+        return
+
+    if not args.output_path:
+        print("Use either --list_stations or set --output_path.")
+        return
+
+    plot.plot_cumulative_annual(args)
