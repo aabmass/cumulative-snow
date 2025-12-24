@@ -1,35 +1,12 @@
-import textwrap
-
-import matplotlib.dates as mdates
+from textwrap import dedent
 import matplotlib.pyplot as pl
 
 import plotly.express as px
-from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-import numpy as np
 import pandas as pd
 
-from cumulative_snow import label_lines, load_data
+from cumulative_snow import load_data
 from cumulative_snow.args import Args
-
-pd.options.plotting.backend = "plotly"
-
-
-def _init_matplotlib_config() -> None:
-    small_size = 10
-    medium_size = 14
-    bigger_size = 18
-    pl.style.use("ggplot")
-    pl.rc("font", size=small_size)
-    pl.rc("axes", titlesize=small_size)
-    pl.rc("axes", labelsize=small_size, titlesize=medium_size)
-    pl.rc("xtick", labelsize=small_size)
-    pl.rc("ytick", labelsize=small_size)
-    pl.rc("legend", fontsize=8)
-    pl.rc("figure", titlesize=bigger_size)
-
-
-_init_matplotlib_config()
 
 
 def plot_cumulative_annual(args: Args) -> None:
@@ -42,24 +19,27 @@ def plot_cumulative_annual(args: Args) -> None:
         bool_mask &= data["WINTER_YEAR"] <= args.end_year.year
     data = data[bool_mask]
 
-    # fig, (ax_top, ax_middle, ax_bottom) = pl.subplots(3, 1)
-    # fig = make_subplots(rows=3, cols=1)
-
     continuous_fig = _plot_continuous(data)
     overlapping_fig = _plot_overlapping(data)
     monthly_averages_fig = _plot_monthly_averages(data)
 
-    # fig.suptitle(
-    #     textwrap.fill(
-    #         "Cumulative Snow per Winter Season at {} ({})".format(
-    #             data["NAME"][0], data["STATION"][0]
-    #         ),
-    #         width=50,
-    #     )
-    # )
+    first_idx = data.first_valid_index()
+    location_name = data["NAME"][first_idx]
+    location_id = data["STATION"][first_idx]
+    page_title = f"Cumulative Snow per Winter Season at {location_name} ({location_id})"
+
     if args.output_path:
         with open(args.output_path, "w") as f:
-            f.write("<html><head></head><body>")
+            f.write(
+                dedent(f"""\
+                <html>
+                    <head>
+                        <title>{page_title}</title>
+                    </head>
+                    <body>
+                """)
+            )
+            f.write(f"<h1>{page_title}</h1>")
             for i, fig in enumerate(
                 [continuous_fig, overlapping_fig, monthly_averages_fig]
             ):
@@ -73,10 +53,6 @@ def plot_cumulative_annual(args: Args) -> None:
                 )
 
             f.write("</body></html>")
-
-        # fig.savefig(args.output_path, bbox_inches="tight")
-    else:
-        pl.show()
 
 
 def _plot_continuous(data: pd.DataFrame) -> go.Figure:
