@@ -20,4 +20,4 @@ uv run main.py \
     --output_path=boston_logan.pdf
 ```
 
-The output plot will look [like this](https://github.com/aabmass/cumulative-snow/blob/master/boston_logan.pdf): ![Boston Logan](./boston-sample.png)
+The output plot will look [like this](https://aabmass.github.io/cumulative-snow/www/boston.html): ![Boston Logan](./boston-sample.png)
