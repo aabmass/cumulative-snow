@@ -47,7 +47,7 @@ def plot_cumulative_annual(args: Args) -> None:
 
     continuous_fig = _plot_continuous(data)
     overlapping_fig = _plot_overlapping(data)
-    # _plot_monthly_averages(ax_bottom, data)
+    monthly_averages_fig = _plot_monthly_averages(data)
 
     # fig.suptitle(
     #     textwrap.fill(
@@ -60,7 +60,9 @@ def plot_cumulative_annual(args: Args) -> None:
     if args.output_path:
         with open(args.output_path, "w") as f:
             f.write("<html><head></head><body>")
-            for i, fig in enumerate([continuous_fig, overlapping_fig]):
+            for i, fig in enumerate(
+                [continuous_fig, overlapping_fig, monthly_averages_fig]
+            ):
                 # Include the JS engine only once to keep the file small
                 include_js = "cdn" if i == 0 else False
                 fig.write_html(
@@ -120,37 +122,60 @@ def _plot_overlapping(data: pd.DataFrame) -> go.Figure:
     ).update_xaxes(tickformat="%b %d")
 
 
-def _plot_monthly_averages(ax: pl.Axes, data: pd.DataFrame) -> None:
-    # Calculate cumulative snow totals per month in each year
-    data["Cumulative Snow"] = (
-        data["SNOW"].groupby([data.index.year, data.index.month]).cumsum()
-    )
-
-    # Average these things by month over all years
-    avg_per_month = data.groupby([data.index.month]).mean(numeric_only=True)[
-        ["Cumulative Snow", "TAVG", "TMAX", "TMIN"]
+def _plot_monthly_averages(data: pd.DataFrame) -> go.Figure:
+    month_order = [
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
     ]
 
-    # This is to cycle the whole DF so July is at the start
-    dummy_sort_key = "dummy"
-    avg_per_month[dummy_sort_key] = np.roll(avg_per_month.index, 6)
-    avg_per_month.sort_values(dummy_sort_key, inplace=True)
-    avg_per_month.drop(dummy_sort_key, axis=1, inplace=True)
-
-    # Replace index month numbers with month names
-    avg_per_month.set_index(
-        pd.to_datetime(avg_per_month.index, format="%m").strftime("%b"),
-        inplace=True,
+    # 1. Sum daily data into specific month-year buckets
+    # (e.g., Total snow in Jan 2020, Total snow in Jan 2021...)
+    monthly_summaries = (
+        data.groupby(
+            [
+                data["DATE"].dt.year.rename("YEAR"),
+                data["DATE"].dt.strftime("%b").rename("MONTH"),
+            ]
+        )
+        .agg({"TAVG": "mean", "TMAX": "mean", "TMIN": "mean", "SNOW": "sum"})
+        # move grouped index into regular columns
+        .reset_index()
     )
 
-    # Plot
-    avg_per_month.plot.bar(
-        ax=ax,
-        secondary_y=[col for col in avg_per_month.columns if col != "Cumulative Snow"],
+    final_data = monthly_summaries.groupby("MONTH").mean(numeric_only=True)
+    final_data = final_data.reindex(month_order)
+
+    fig = px.bar(
+        final_data,
+        x=final_data.index,
+        y=["SNOW", "TMAX", "TAVG", "TMIN"],
+        title="Monthly Averages",
+        barmode="group",
+        template="ggplot2",
+        labels={
+            "SNOW": "Snowfall (inches)",
+            "TAVG": "Avg Temp",
+            "TMAX": "Max Temp",
+            "TMIN": "Min Temp",
+        },
     )
 
-    ax.grid(True)
-    ax.right_ax.grid(False)
-    ax.set_xlabel("Month")
-    ax.set_ylabel("Snowfall (Inches)")
-    ax.right_ax.set_ylabel("Temperature (F)")
+    # Hacks to get dual axis with separate units
+    fig.update_layout(
+        yaxis2=dict(title="Degrees (°F)", side="right", overlaying="y", showgrid=False),
+        yaxis_title="Snowfall (Inches)",
+    )
+    fig.update_traces(yaxis="y2", selector=lambda t: t.name in ["TAVG", "TMAX", "TMIN"])
+    fig.update_traces(yaxis="y1", selector=lambda t: t.name == "SNOW")
+
+    return fig
