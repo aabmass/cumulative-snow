@@ -46,7 +46,7 @@ def plot_cumulative_annual(args: Args) -> None:
     # fig = make_subplots(rows=3, cols=1)
 
     continuous_fig = _plot_continuous(data)
-    # _plot_overlapping(ax_middle, data)
+    overlapping_fig = _plot_overlapping(data)
     # _plot_monthly_averages(ax_bottom, data)
 
     # fig.suptitle(
@@ -58,7 +58,20 @@ def plot_cumulative_annual(args: Args) -> None:
     #     )
     # )
     if args.output_path:
-        continuous_fig.write_html(args.output_path, include_plotlyjs="cdn")
+        with open(args.output_path, "w") as f:
+            f.write("<html><head></head><body>")
+            for i, fig in enumerate([continuous_fig, overlapping_fig]):
+                # Include the JS engine only once to keep the file small
+                include_js = "cdn" if i == 0 else False
+                fig.write_html(
+                    f,
+                    default_height=600,
+                    full_html=False,
+                    include_plotlyjs=include_js,
+                )
+
+            f.write("</body></html>")
+
         # fig.savefig(args.output_path, bbox_inches="tight")
     else:
         pl.show()
@@ -78,39 +91,33 @@ def _plot_continuous(data: pd.DataFrame) -> go.Figure:
     )
 
 
-def _plot_overlapping(ax: pl.Axes, data: pd.DataFrame) -> None:
-    cumulative_data = data[["WINTER_YEAR", "SNOW"]].groupby(["WINTER_YEAR"]).cumsum()
-    cumulative_data["WINTER_YEAR"] = data["WINTER_YEAR"]
+def _plot_overlapping(data: pd.DataFrame) -> go.Figure:
+    data = data.copy()
 
-    # Create a new index adjusted to be all in the same year (ignore the
-    # specific year) by normalizing to timedelta since start of winter year
-    # then adding it to an arbitrary year.
-    deltas = cumulative_data.index - cumulative_data["WINTER_YEAR"]
-    index_same_year = (
-        pd.Timestamp(year=2000, day=1, month=7) + deltas - pd.Timedelta(days=1)
+    # Normalize to the 1999-2000 winter year. Note 2000 includes the leap day.
+    data["NORMALIZED_WINTER_DATE"] = pd.to_datetime(
+        pd.DataFrame(
+            {
+                "year": (
+                    data["DATE"].dt.year - data["WINTER_SEASON_START"].dt.year + 1999
+                ),
+                "month": data["DATE"].dt.month,
+                "day": data["DATE"].dt.day,
+            }
+        )
     )
 
-    # Update winter year to be just the year int, for column labels after pivot
-    data_overlapping = cumulative_data.assign(
-        WINTER_YEAR=cumulative_data["WINTER_YEAR"].dt.year
-    )
-    data_overlapping.set_index(index_same_year, inplace=True)
-
-    # Pivot WINTER_YEAR to be the new columns
-    data_overlapping = data_overlapping.pivot(columns="WINTER_YEAR", values="SNOW")
-
-    # Plot
-    data_overlapping.plot(ax=ax, legend=False)
-
-    label_lines.label_all(ax, xoffset=0.0, yoffset=-0.02, fontsize=6)
-    ax.set_xlabel("Month")
-    ax.set_ylabel("Snowfall (inches)")
-    # Put a major tick per month
-    locator = mdates.MonthLocator()
-    fmt = mdates.DateFormatter("%b")
-    ax.get_xaxis().set_major_locator(locator)
-    ax.get_xaxis().set_major_formatter(fmt)
-    ax.get_xaxis().set_visible(True)
+    return px.line(
+        data,
+        x="NORMALIZED_WINTER_DATE",
+        y="CUMULATIVE_SNOW",
+        color="WINTER_YEAR",
+        title="Cumulative Snow per Winter Season (Overlapping Years)",
+        labels={
+            "CUMULATIVE_SNOW": "Snowfall (inches)",
+            "NORMALIZED_WINTER_DATE": "Date in Winter Season",
+        },
+    ).update_xaxes(tickformat="%b %d")
 
 
 def _plot_monthly_averages(ax: pl.Axes, data: pd.DataFrame) -> None:
