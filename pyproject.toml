@@ -4,7 +4,12 @@ version = "0.1.0"
 description = "Graph cumulative snow from NOAA data"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["numpy>=2.2.3", "pandas>=2.2.3", "plotly>=6.5.0"]
+dependencies = [
+    "kaleido>=1.2.0",
+    "numpy>=2.2.3",
+    "pandas>=2.2.3",
+    "plotly>=6.5.0",
+]
 
 [dependency-groups]
 dev = ["pyqt5>=5.15.11", "ruff>=0.9.6"]

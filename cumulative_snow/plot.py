@@ -36,9 +36,19 @@ def plot_cumulative_annual(args: Args) -> None:
             <html>
                 <head>
                     <title>{page_title}</title>
+                    <style>
+                    #root {{
+                        display: flex;
+                        margin: auto;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                    }}
+
+                    </style>
                 </head>
                 <body>
-                <h1>{page_title}</h1>
+                    <h1>{page_title}</h1>
+                    <div id="root">
             """)
         )
         for i, fig in enumerate(
@@ -48,12 +58,23 @@ def plot_cumulative_annual(args: Args) -> None:
             include_js = "cdn" if i == 0 else False
             fig.write_html(
                 f,
-                default_height=600,
+                default_height=800,
+                default_width=1000,
                 full_html=False,
                 include_plotlyjs=include_js,
             )
+            if args.save_svgs:
+                fig.write_image(
+                    f"{args.output_path}.{i}.svg", format="svg", height=800, width=1000
+                )
 
-        f.write("</body></html>")
+        f.write(
+            dedent("""\
+                    </div>
+                </body>
+            </html>
+            """)
+        )
 
 
 def _plot_continuous(data: pd.DataFrame) -> go.Figure:

@@ -20,4 +20,7 @@ uv run main.py \
     --output_path=boston_logan.pdf
 ```
 
-The output plot will look [like this](https://aabmass.github.io/cumulative-snow/www/boston.html): ![Boston Logan](./boston-sample.png)
+An example rendered interactive HTML output https://aabmass.github.io/cumulative-snow/www/boston.html. The figures look like
+![Boston Logan Continuous](./www/boston.html.0.svg)
+![Boston Logan Overlapping](./www/boston.html.1.svg)
+![Boston Logan Monthly Averages](./www/boston.html.2.svg)

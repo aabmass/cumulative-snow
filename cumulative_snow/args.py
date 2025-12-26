@@ -8,6 +8,7 @@ from typing import Optional, Sequence, Text
 class Args:
     csv_path: str
     output_path: Optional[str]
+    save_svgs: bool
     start_year: Optional[datetime]
     end_year: Optional[datetime]
     station: Optional[str]
@@ -22,6 +23,11 @@ def _get_parser() -> ArgumentParser:
         "csv_path", help="Path to the CSV file containing daily snowfall recordings"
     )
     parser.add_argument("--output_path", help="Path to save the HTML file.")
+    parser.add_argument(
+        "--save_svgs",
+        action="store_true",
+        help="Also save each figure as an SVG. Used for embedding in the README.md",
+    )
     parser.add_argument(
         "--start_year", type=_parse_year, help="Year to start analysis for"
     )
