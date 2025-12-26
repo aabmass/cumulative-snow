@@ -34,7 +34,7 @@ def load_noaa_data(args: Args) -> pd.DataFrame:
     data["WINTER_SEASON_START"] = data["DATE"] - offset
 
     # Pretty printable year the winter started in
-    data["WINTER_YEAR"] = (data["DATE"] - offset).dt.year
+    data["WINTER_YEAR"] = pd.Categorical((data["DATE"] - offset).dt.year, ordered=True)
 
     # Cumulative snow for the year
     data["CUMULATIVE_SNOW"] = data.groupby("WINTER_YEAR")["SNOW"].cumsum()
