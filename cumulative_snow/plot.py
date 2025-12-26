@@ -41,7 +41,12 @@ def plot_cumulative_annual(args: Args) -> None:
                 <head>
                     <title>{page_title}</title>
                     <style>
-                    #root {{
+
+                    h1 {{
+                        text-align: center;
+                    }}
+
+                    #graphs {{
                         display: flex;
                         margin: auto;
                         flex-wrap: wrap;
@@ -52,7 +57,7 @@ def plot_cumulative_annual(args: Args) -> None:
                 </head>
                 <body>
                     <h1>{page_title}</h1>
-                    <div id="root">
+                    <div id="graphs">
             """)
         )
         for i, fig in enumerate(figs):
