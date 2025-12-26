@@ -21,6 +21,10 @@ uv run main.py \
 ```
 
 An example rendered interactive HTML output https://aabmass.github.io/cumulative-snow/www/boston.html. The figures look like
-![Boston Logan Continuous](./www/boston.html.0.svg)
-![Boston Logan Overlapping](./www/boston.html.1.svg)
-![Boston Logan Monthly Averages](./www/boston.html.2.svg)
+![](./www/boston.html.0.svg)
+![](./www/boston.html.1.svg)
+![](./www/boston.html.2.svg)
+![](./www/boston.html.3.svg)
+![](./www/boston.html.4.svg)
+![](./www/boston.html.5.svg)
+
