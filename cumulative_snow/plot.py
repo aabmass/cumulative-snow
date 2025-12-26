@@ -65,7 +65,7 @@ def plot_cumulative_annual(args: Args) -> None:
             )
             if args.save_svgs:
                 fig.write_image(
-                    f"{args.output_path}.{i}.svg", format="svg", height=800, width=1000
+                    f"{args.output_path}.{i}.svg", format="svg", height=600, width=1000
                 )
 
         f.write(
