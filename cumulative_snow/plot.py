@@ -158,7 +158,8 @@ def _plot_overlapping(data: pd.DataFrame) -> Iterable[go.Figure]:
         y="SNOW",
         points="all",
         color="WINTER_YEAR",
-        title="Violin Plot of Snow",
+        title="Distribution of Snowfall events per Year",
+        width=2000,
         labels={
             "SNOW": "Snowfall (inches)",
             "WINTER_YEAR": "Winter Year",
