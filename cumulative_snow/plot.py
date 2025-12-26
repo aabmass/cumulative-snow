@@ -205,7 +205,6 @@ def _plot_monthly_averages(data: pd.DataFrame) -> Iterable[go.Figure]:
         y=["SNOW", "TAVG", "TMAX", "TMIN"],
         title="Monthly Averages",
         barmode="group",
-        template="ggplot2",
         labels={
             "SNOW": "Snowfall (inches)",
             "TAVG": "Avg Temp",
