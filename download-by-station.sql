@@ -26,6 +26,31 @@ COPY (
 ) TO 'us_wide_final.parquet' (FORMAT 'PARQUET', COMPRESSION 'ZSTD');
 
 
+CREATE OR REPLACE MACRO by_year(element_type) AS TABLE
+    SELECT 
+        YEAR,
+        ID, -- Hive partition key from the folder name
+        DATE,
+        DATA_VALUE
+    FROM read_parquet(
+        format(
+            's3://noaa-ghcn-pds/parquet/by_year/YEAR=*/ELEMENT={}/*.parquet',
+            element_type
+        ),
+        hive_partitioning=true,
+        hive_types={'YEAR': INT, 'ELEMENT': VARCHAR}
+    );
+
+COPY (
+    select
+        tmax.*,
+        tmax.DATA_VALUE as TMAX,
+        snow.DATA_VALUE as SNOW
+    FROM by_year('TMAX') as tmax
+    JOIN by_year('SNOW') as snow on tmax.YEAR = snow.YEAR AND tmax.DATE = snow.DATE AND tmax.ID = snow.ID
+) TO 'us_wide_final' (FORMAT 'PARQUET', PARTITION_BY (YEAR), COMPRESSION 'ZSTD');
+
+
 EXPLAIN ANALYZE SELECT 
         STATION, -- Hive partition key from the folder name
         DATE,
@@ -34,10 +59,13 @@ EXPLAIN ANALYZE SELECT
         MAX(DATA_VALUE) FILTER (WHERE ELEMENT = 'PRCP') AS PRCP,
         MAX(DATA_VALUE) FILTER (WHERE ELEMENT = 'SNOW') AS SNOW
     FROM read_parquet(
-        's3://noaa-ghcn-pds/parquet/by_station/STATION=US*/*/*.parquet',
+        's3://noaa-ghcn-pds/parquet/by_station/STATION=*/*/*.parquet',
         hive_partitioning=true,
         hive_types={'STATION': VARCHAR, 'ELEMENT': VARCHAR}
     )
     -- We filter for US stations directly in the S3 glob above (STATION=US*)
     WHERE ELEMENT IN ('TMAX', 'TMIN', 'PRCP', 'SNOW')
     GROUP BY STATION, DATE;
+
+
+-- USW00014739
