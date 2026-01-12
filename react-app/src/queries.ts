@@ -25,8 +25,8 @@ export async function queryStationList(
       quote='',
       ignore_errors=True
     )
-    WHERE NAME like 'US%'
-    -- LIMIT 1000;
+    WHERE ID like 'US%'
+    LIMIT 1000;
     `
   );
 }

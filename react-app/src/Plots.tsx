@@ -1,7 +1,15 @@
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import type { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
+import { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
 import { createDb } from "./duckdb";
-import { useEffect, useState } from "react";
 import { queryStationList, type Stations } from "./queries";
 
 interface DbState {
@@ -38,11 +46,27 @@ export default function Plots(): React.ReactNode {
 
   return dbState ? (
     <div>
-      <ul>
-        {dbState.stations.map((station) => (
-          <li key={station.id}>{station.name}</li>
-        ))}
-      </ul>
+      <Combobox items={dbState.stations.getChild("id")?.toJSON()}>
+        <ComboboxInput
+          id="small-form-framework"
+          placeholder="Select a framework"
+          required
+        />
+        <ComboboxContent>
+          <ComboboxEmpty>No frameworks found.</ComboboxEmpty>
+          <ComboboxList>
+            {(item, idx) => {
+              const { id, name } = dbState.stations.get(idx) ?? {};
+              const value = `${name} (${id})`;
+              return (
+                <ComboboxItem key={item} value={item}>
+                  {value}
+                </ComboboxItem>
+              );
+            }}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
       <Plot
         data={[
           {
