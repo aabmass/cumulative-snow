@@ -9,3 +9,5 @@ datasets/*
 cumulative_snow.egg-info/
 dist/
 build/
+us_wide_final
+*.parquet
