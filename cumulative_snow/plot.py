@@ -1,6 +1,4 @@
-import itertools
 from textwrap import dedent
-from typing import Iterable
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -10,7 +8,7 @@ from cumulative_snow import load_data
 from cumulative_snow.args import Args
 
 
-def plot_cumulative_annual(args: Args) -> None:
+def plot_to_html(args: Args) -> None:
     if not args.output_path:
         return
 
@@ -23,11 +21,11 @@ def plot_cumulative_annual(args: Args) -> None:
         bool_mask &= data["WINTER_YEAR"] <= args.end_year.year
     data = data[bool_mask]
 
-    figs = itertools.chain(
-        _plot_continuous(data),
-        _plot_overlapping(data),
-        _plot_monthly_averages(data),
-    )
+    figs = [
+        plot_continuous(data),
+        *plot_overlapping(data),
+        plot_monthly_averages(data),
+    ]
 
     first_idx = data.first_valid_index()
     location_name = data["NAME"][first_idx]
@@ -84,8 +82,8 @@ def plot_cumulative_annual(args: Args) -> None:
         )
 
 
-def _plot_continuous(data: pd.DataFrame) -> Iterable[go.Figure]:
-    yield px.line(
+def plot_continuous(data: pd.DataFrame) -> go.Figure:
+    return px.line(
         data,
         x="DATE",
         y="CUMULATIVE_SNOW",
@@ -95,7 +93,9 @@ def _plot_continuous(data: pd.DataFrame) -> Iterable[go.Figure]:
     )
 
 
-def _plot_overlapping(data: pd.DataFrame) -> Iterable[go.Figure]:
+def plot_overlapping(
+    data: pd.DataFrame,
+) -> tuple[go.Figure, go.Figure, go.Figure, go.Figure]:
     data = data.copy()
 
     # Normalize to the 1999-2000 winter year. Note 2000 includes the leap day.
@@ -111,7 +111,7 @@ def _plot_overlapping(data: pd.DataFrame) -> Iterable[go.Figure]:
         )
     )
 
-    yield px.line(
+    fig_overlapping = px.line(
         data,
         x="NORMALIZED_WINTER_DATE",
         y="CUMULATIVE_SNOW",
@@ -124,7 +124,7 @@ def _plot_overlapping(data: pd.DataFrame) -> Iterable[go.Figure]:
     ).update_xaxes(tickformat="%b %d")
 
     data_days_with_snow = data[data["SNOW"] > 0]
-    yield px.scatter(
+    fig_scatter = px.scatter(
         data_days_with_snow,
         x="NORMALIZED_WINTER_DATE",
         y="SNOW",
@@ -137,7 +137,7 @@ def _plot_overlapping(data: pd.DataFrame) -> Iterable[go.Figure]:
         },
     ).update_xaxes(tickformat="%b %d")
 
-    yield px.density_heatmap(
+    fig_heatmap = px.density_heatmap(
         data_days_with_snow,
         x="NORMALIZED_WINTER_DATE",
         y="SNOW",
@@ -152,22 +152,23 @@ def _plot_overlapping(data: pd.DataFrame) -> Iterable[go.Figure]:
         },
     ).update_xaxes(tickformat="%b %d")
 
-    yield px.violin(
+    fig_violin = px.violin(
         data_days_with_snow,
         x="WINTER_YEAR",
         y="SNOW",
         points="all",
         color="WINTER_YEAR",
         title="Distribution of Snowfall events per Year",
-        width=2000,
         labels={
             "SNOW": "Snowfall (inches)",
             "WINTER_YEAR": "Winter Year",
         },
     )
 
+    return fig_overlapping, fig_scatter, fig_heatmap, fig_violin
 
-def _plot_monthly_averages(data: pd.DataFrame) -> Iterable[go.Figure]:
+
+def plot_monthly_averages(data: pd.DataFrame) -> go.Figure:
     month_order = [
         "Jul",
         "Aug",
@@ -222,4 +223,4 @@ def _plot_monthly_averages(data: pd.DataFrame) -> Iterable[go.Figure]:
     fig.update_traces(yaxis="y2", selector=lambda t: t.name in ["TAVG", "TMAX", "TMIN"])
     fig.update_traces(yaxis="y1", selector=lambda t: t.name == "SNOW")
 
-    yield fig
+    return fig

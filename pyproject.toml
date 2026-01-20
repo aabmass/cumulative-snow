@@ -6,10 +6,15 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "kaleido>=1.2.0",
+    "marimo[recommended]>=0.19.4",
     "numpy>=2.2.3",
     "pandas>=2.2.3",
     "plotly>=6.5.0",
 ]
 
 [dependency-groups]
-dev = ["pyqt5>=5.15.11", "ruff>=0.9.6"]
+dev = [
+    "basedpyright>=1.37.1",
+    "pyqt5>=5.15.11",
+    "ruff>=0.9.6",
+]

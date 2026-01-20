@@ -7,12 +7,12 @@ from typing import Optional, Sequence, Text
 @dataclass
 class Args:
     csv_path: str
-    output_path: Optional[str]
-    save_svgs: bool
-    start_year: Optional[datetime]
-    end_year: Optional[datetime]
-    station: Optional[str]
-    list_stations: bool
+    output_path: Optional[str] = None
+    save_svgs: bool = False
+    start_year: Optional[datetime] = None
+    end_year: Optional[datetime] = None
+    station: Optional[str] = None
+    list_stations: bool = False
 
 
 def _get_parser() -> ArgumentParser:

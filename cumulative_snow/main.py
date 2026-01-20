@@ -21,4 +21,4 @@ def main() -> None:
         print("Use either --list_stations or set --output_path.")
         return
 
-    plot.plot_cumulative_annual(args)
+    plot.plot_to_html(args)
