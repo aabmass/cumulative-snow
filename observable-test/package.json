@@ -10,11 +10,15 @@
   },
   "dependencies": {
     "@observablehq/framework": "^1.13.3",
+    "arquero": "^8.0.3",
     "d3-dsv": "^3.0.1",
-    "d3-time-format": "^4.1.0"
+    "d3-time-format": "^4.1.0",
+    "pyodide": "0.27.0"
   },
   "devDependencies": {
-    "rimraf": "^5.0.5"
+    "@types/plotly.js": "^3.0.9",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18"

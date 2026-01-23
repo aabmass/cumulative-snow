@@ -6,6 +6,16 @@ toc: false
 
 # Rocket launches 🚀
 
+```ts
+const numPoints = view(Inputs.range([0, 10], {step: 1}));
+```
+
+```ts
+import {renderHtml} from "./components/foo.js";
+
+// Render a plotly chart from pyodide
+display(await renderHtml(numPoints, html`<div id="plot-1" />`));
+```
 <!-- Load and transform the data -->
 
 ```js
