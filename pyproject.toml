@@ -3,18 +3,18 @@ name = "cumulative-snow"
 version = "0.1.0"
 description = "Graph cumulative snow from NOAA data"
 readme = "README.md"
+authors = [{ name = "Aaron Abbott", email = "aabmass@gmail.com" }]
 requires-python = ">=3.10"
 dependencies = [
-    "kaleido>=1.2.0",
     "marimo[recommended]>=0.19.4",
-    "numpy>=2.2.3",
+    "numpy>=2.0.2",
     "pandas>=2.2.3",
-    "plotly>=6.5.0",
+    "plotly[express]>=6.0.0",
 ]
 
 [dependency-groups]
-dev = [
-    "basedpyright>=1.37.1",
-    "pyqt5>=5.15.11",
-    "ruff>=0.9.6",
-]
+dev = ["basedpyright>=1.37.1", "pyqt5>=5.15.11", "ruff>=0.9.6"]
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"

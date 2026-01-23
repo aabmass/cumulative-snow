@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.4"
+__generated_with = "0.19.5"
 app = marimo.App(width="medium")
 
 
@@ -47,18 +47,41 @@ def _(args, load_data):
 
 
 @app.cell
-def _():
-    import marimo as mo
+async def _(is_wasm, mo):
+    if is_wasm():
+        import micropip
+
+        await micropip.install(
+            str(mo.notebook_location() / "public" / "cumulative_snow-0.1.0-py3-none-any.whl")
+        )
+
     import plotly.express as px
     import plotly.io as pio
-
 
     from cumulative_snow import load_data, plot
     from cumulative_snow.args import Args
 
     # Set plotly theme based on marimo theme
     pio.templates.default = "plotly_dark" if mo.app_meta().theme == "dark" else None
-    return Args, load_data, mo, plot
+    return Args, load_data, plot
+
+
+@app.cell
+def _():
+    import marimo as mo
+    return (mo,)
+
+
+@app.cell
+def _():
+    def is_wasm():
+        import sys
+
+        return "pyodide" in sys.modules
+
+
+    is_wasm()
+    return (is_wasm,)
 
 
 if __name__ == "__main__":
