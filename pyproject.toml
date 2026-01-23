@@ -10,6 +10,7 @@ dependencies = [
     "numpy>=2.0.2",
     "pandas>=2.2.3",
     "plotly[express]>=6.0.0",
+    "polars>=1.0.0",
 ]
 
 [dependency-groups]

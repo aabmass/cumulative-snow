@@ -9,3 +9,4 @@ datasets/*
 cumulative_snow.egg-info/
 dist/
 build/
+__marimo__
