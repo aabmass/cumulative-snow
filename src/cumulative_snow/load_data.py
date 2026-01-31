@@ -1,7 +1,5 @@
 import pandas as pd
 
-from cumulative_snow.args import Args
-
 
 def load_noaa_data(data: pd.DataFrame) -> pd.DataFrame:
     """Loads NOAA data from file path.

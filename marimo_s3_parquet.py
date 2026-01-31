@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.19.6"
-app = marimo.App(width="medium")
+app = marimo.App()
 
 
 @app.cell
@@ -84,12 +84,9 @@ def _(mo, stations_df):
 
 
 @app.cell
-def _(mo, station_dropdown):
+def _(mo, paths):
     duckdb_df = mo.sql(
         f"""
-        INSTALL httpfs;
-        LOAD httpfs;
-
         PIVOT (
             SELECT
                 ID,
@@ -106,16 +103,17 @@ def _(mo, station_dropdown):
                 END AS converted_value
             FROM
                 read_parquet(
-                    's3://noaa-ghcn-pds/parquet/by_station/STATION={station_dropdown.value}/ELEMENT=*/*.parquet',
+                    {paths},
                     hive_partitioning = true
                 )
             WHERE
                 ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'PRCP', 'SNOW', 'SNWD')
-                AND YEAR(strptime(DATE, '%Y%m%d')) > 1990
+                AND YEAR(strptime(DATE, '%Y%m%d')) > 1970
         ) ON ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'PRCP', 'SNOW', 'SNWD') USING FIRST(converted_value)
         GROUP BY
             ID,
             DATE
+        ORDER BY ID, DATE
         """
     )
     return (duckdb_df,)
@@ -144,9 +142,13 @@ async def _(mo):
     from cumulative_snow import load_data, plot
     from cumulative_snow.args import Args
 
+    import os
+    import urllib.request
+    from urllib.parse import urlencode
+
     # Set plotly theme based on marimo theme
     pio.templates.default = "plotly_dark" if mo.app_meta().theme == "dark" else None
-    return load_data, pl, plot
+    return load_data, os, pl, plot, urlencode, urllib
 
 
 @app.cell
@@ -160,6 +162,65 @@ def is_wasm():
     import sys
 
     return "pyodide" in sys.modules
+
+
+@app.cell
+def _(Error, download_parquet, mo, station_dropdown, urlencode, urllib):
+    mo.stop(
+        not station_dropdown.value,
+        mo.md("**You must select a station from Station Dropdown above**"),
+    )
+
+    import xml.etree.ElementTree as ET
+    import pandas as pd
+    import pyarrow.dataset as ds
+
+
+    def list_public_objects_with_prefix(bucket_name, prefix, region="us-east-1"):
+        # S3 API uses 'prefix' query parameter to filter results
+        params = {"list-type": "2", "prefix": prefix}
+        query_string = urlencode(params)
+        url = f"https://{bucket_name}.s3.amazonaws.com/?{query_string}"
+
+        ns = {"s3": "http://s3.amazonaws.com/doc/2006-03-01/"}
+
+        try:
+            with urllib.request.urlopen(url) as response:
+                r = response.read()
+                root = ET.fromstring(r)
+
+                # Extract keys from the XML response
+                for content in root.findall("s3:Contents", ns):
+                    yield content.find("s3:Key", ns).text
+
+                if not root.findall("s3:Contents", ns):
+                    raise Error(f"No objects found with prefix: {prefix}")
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+
+    paths = []
+    for key in list_public_objects_with_prefix(
+        "noaa-ghcn-pds",
+        f"parquet/by_station/STATION={station_dropdown.value}",
+    ):
+        path = f"/tmp/{key}"
+        url = f"https://noaa-ghcn-pds.s3.amazonaws.com/{key}"
+        download_parquet(path, url)
+        paths.append(path)
+    return (paths,)
+
+
+@app.cell
+def _(mo, os, urllib):
+    # This "caches" the computation really, the return value is not important
+    @mo.persistent_cache
+    def download_parquet(path: str, url: str):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        urllib.request.urlretrieve(url, path)
+        return path
+    return (download_parquet,)
 
 
 if __name__ == "__main__":
