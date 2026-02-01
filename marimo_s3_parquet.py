@@ -16,6 +16,8 @@ def _(mo):
     This page runs entirely in the browser querying data from the [AWS S3 hosted
     Registry of Open Data](https://registry.opendata.aws/noaa-ghcn/).
 
+    The notebook may take some time to load when using WASM.
+
     ---
 
     **Select a station from the map or dropdown below**
@@ -31,45 +33,46 @@ def _(mo, pd, pl):
         return pl.from_pandas(df)
 
 
-    _stations_df: pl.DataFrame = read_fwf_polars(
-        "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
-        colspecs=[
-            (0, 11),  # ID
-            (12, 20),  # LATITUDE
-            (21, 30),  # LONGITUDE
-            (31, 37),  # ELEVATION
-            (38, 40),  # STATE
-            (41, 71),  # NAME
-            (72, 75),  # GSN FLAG
-            (76, 79),  # HCN/CRN FLAG
-            (80, 85),  # WMO ID
-        ],
-        names=[
-            "ID",
-            "LATITUDE",
-            "LONGITUDE",
-            "ELEVATION",
-            "STATE",
-            "NAME",
-            "GSN_FLAG",
-            "HCN_CRN_FLAG",
-            "WMO_ID",
-        ],
-        usecols=["ID", "LATITUDE", "LONGITUDE", "ELEVATION", "STATE", "NAME"],
-    )
-    _inventory_df: pl.DataFrame = read_fwf_polars(
-        "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt",
-        colspecs=[
-            (0, 11),  # ID
-            (12, 20),  # LATITUDE
-            (21, 30),  # LONGITUDE
-            (31, 35),  # ELEMENT
-            (36, 40),  # FIRSTYEAR
-            (41, 45),  # LASTYEAR
-        ],
-        names=["ID", "LATITUDE", "LONGITUDE", "ELEMENT", "FIRSTYEAR", "LASTYEAR"],
-        usecols=["ID", "ELEMENT", "FIRSTYEAR", "LASTYEAR"],
-    )
+    with mo.status.spinner(title="Loading stations from noaa.gov") as _spinner:
+        _stations_df: pl.DataFrame = read_fwf_polars(
+            "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt",
+            colspecs=[
+                (0, 11),  # ID
+                (12, 20),  # LATITUDE
+                (21, 30),  # LONGITUDE
+                (31, 37),  # ELEVATION
+                (38, 40),  # STATE
+                (41, 71),  # NAME
+                (72, 75),  # GSN FLAG
+                (76, 79),  # HCN/CRN FLAG
+                (80, 85),  # WMO ID
+            ],
+            names=[
+                "ID",
+                "LATITUDE",
+                "LONGITUDE",
+                "ELEVATION",
+                "STATE",
+                "NAME",
+                "GSN_FLAG",
+                "HCN_CRN_FLAG",
+                "WMO_ID",
+            ],
+            usecols=["ID", "LATITUDE", "LONGITUDE", "ELEVATION", "STATE", "NAME"],
+        )
+        _inventory_df: pl.DataFrame = read_fwf_polars(
+            "https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt",
+            colspecs=[
+                (0, 11),  # ID
+                (12, 20),  # LATITUDE
+                (21, 30),  # LONGITUDE
+                (31, 35),  # ELEMENT
+                (36, 40),  # FIRSTYEAR
+                (41, 45),  # LASTYEAR
+            ],
+            names=["ID", "LATITUDE", "LONGITUDE", "ELEMENT", "FIRSTYEAR", "LASTYEAR"],
+            usecols=["ID", "ELEMENT", "FIRSTYEAR", "LASTYEAR"],
+        )
 
     # Consider using lazy to optimize perf
     _stations_df = (
@@ -237,12 +240,17 @@ def _(duckdb_df, load_data):
 @app.cell
 async def _(mo):
     if is_wasm():
-        import micropip
+        with mo.status.spinner(title="Installing WASM dependencies"):
+            import micropip
 
-        # There isn't currently any way to bundle repo code into the wasm notebook
-        await micropip.install(
-            str(mo.notebook_location() / "public" / "cumulative_snow-0.1.0-py3-none-any.whl")
-        )
+            # There isn't currently any way to bundle repo code into the wasm notebook
+            await micropip.install(
+                str(
+                    mo.notebook_location()
+                    / "public"
+                    / "cumulative_snow-0.1.0-py3-none-any.whl"
+                )
+            )
 
     import plotly.express as px
     import plotly.io as pio
@@ -265,6 +273,14 @@ async def _(mo):
 @app.cell
 def _():
     import marimo as mo
+
+    # TODO: make marimo use IndexDB for persistent caches:
+    #
+    # - Implementation: Mount pyodide.FS.filesystems.IDBFS to a local path (e.g., /mnt/marimo_cache).
+    # - Syncing: Ensure pyodide.FS.syncfs(True, ...) runs on notebook startup to hydrate data.
+    # - Lifecycle: Add a final cell to trigger pyodide.FS.syncfs(False, ...) to persist results
+    #   to the browser's IndexedDB after expensive computations.
+    # - Reference: https://pyodide.org, https://share.google/aimode/WPx02Z0E7LqlgScYt
     return (mo,)
 
 
