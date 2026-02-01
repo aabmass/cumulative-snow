@@ -1,13 +1,24 @@
 import marimo
 
 __generated_with = "0.19.7"
-app = marimo.App(sql_output="native")
+app = marimo.App(width="full", sql_output="native")
 
 
 @app.cell
 def _(mo):
     mo.md("""
-    ### Select a station from the map or dropdown below
+    # NOAA GCHN snowfall
+
+    [View code on Github](https://github.com/aabmass/cumulative-snow)
+
+    Visualize annual snowfall over time for climate stations in [NOAA's GHCNd
+    dataset](https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily).
+    This page runs entirely in the browser querying data from the [AWS S3 hosted
+    Registry of Open Data](https://registry.opendata.aws/noaa-ghcn/).
+
+    ---
+
+    **Select a station from the map or dropdown below**
     """)
     return
 
@@ -211,7 +222,8 @@ def _(mo, paths):
         ORDER BY
             ID,
             DATE
-        """
+        """,
+        output=False,
     )
     return (duckdb_df,)
 
@@ -227,6 +239,7 @@ async def _(mo):
     if is_wasm():
         import micropip
 
+        # There isn't currently any way to bundle repo code into the wasm notebook
         await micropip.install(
             str(mo.notebook_location() / "public" / "cumulative_snow-0.1.0-py3-none-any.whl")
         )

@@ -6,9 +6,6 @@ readme = "README.md"
 authors = [{ name = "Aaron Abbott", email = "aabmass@gmail.com" }]
 requires-python = ">=3.10"
 dependencies = [
-    "folium>=0.20.0",
-    "geopandas>=1.1.2",
-    "lonboard>=0.13.0",
     "marimo[recommended]>=0.19.4",
     "numpy>=2.0.2",
     "pandas>=2.2.3",
