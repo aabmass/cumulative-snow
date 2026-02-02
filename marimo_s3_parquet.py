@@ -196,35 +196,51 @@ def _(data, mo, plot):
 
 
 @app.cell
-def _(mo, paths):
+def _(mo, paths, pivoted_data):
     duckdb_df = mo.sql(
         f"""
-        PIVOT (
-            SELECT
-                ID,
-                strptime(DATE, '%Y%m%d')::DATE AS DATE,
-                ELEMENT,
-                CASE
-                -- Temperature: Tenths of C to Fahrenheit
-                    WHEN ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'TOBS') THEN ROUND((DATA_VALUE / 10.0) * 1.8 + 32, 2)
-                    -- Precipitation: Tenths of mm to Inches
-                    WHEN ELEMENT = 'PRCP' THEN ROUND(DATA_VALUE / 254.0, 2)
-                    -- Snow: mm to Inches
-                    WHEN ELEMENT IN ('SNOW', 'SNWD') THEN ROUND(DATA_VALUE / 25.4, 2)
-                    ELSE DATA_VALUE
-                END AS converted_value
-            FROM
-                read_parquet({paths}, hive_partitioning = true)
-            WHERE
-                ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'PRCP', 'SNOW', 'SNWD')
-                AND YEAR(strptime(DATE, '%Y%m%d')) > 1970
-        ) ON ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'PRCP', 'SNOW', 'SNWD') USING FIRST(converted_value)
-        GROUP BY
+        WITH
+            pivoted_data AS (
+                PIVOT (
+                    SELECT
+                        ID,
+                        strptime(DATE, '%Y%m%d')::DATE AS DATE,
+                        ELEMENT,
+                        CASE
+                        -- Temperature: Tenths of C to Fahrenheit
+                            WHEN ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'TOBS') THEN ROUND((DATA_VALUE / 10.0) * 1.8 + 32, 2)
+                            -- Precipitation: Tenths of mm to Inches
+                            WHEN ELEMENT = 'PRCP' THEN ROUND(COALESCE(DATA_VALUE, 0) / 254.0, 2)
+                            -- Snow: mm to Inches
+                            WHEN ELEMENT IN ('SNOW', 'SNWD') THEN ROUND(COALESCE(DATA_VALUE, 0) / 25.4, 2)
+                            ELSE DATA_VALUE
+                        END AS converted_value
+                    FROM
+                        read_parquet({paths}, hive_partitioning = true)
+                    WHERE
+                        ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'PRCP', 'SNOW', 'SNWD')
+                        AND YEAR(strptime(DATE, '%Y%m%d')) > 1970
+                ) ON ELEMENT IN ('TMAX', 'TAVG', 'TMIN', 'PRCP', 'SNOW', 'SNWD') USING FIRST(converted_value)
+                GROUP BY
+                    ID,
+                    DATE
+            )
+        SELECT
             ID,
-            DATE
+            DATE,
+            -- Leave temperatures as NULL if they are missing
+            TMAX,
+            TAVG,
+            TMIN,
+            -- Fill missing precipitation/snow with 0
+            COALESCE(PRCP, 0) AS PRCP,
+            COALESCE(SNOW, 0) AS SNOW,
+            COALESCE(SNWD, 0) AS SNWD
+        FROM
+            pivoted_data
         ORDER BY
             ID,
-            DATE
+            DATE;
         """,
         output=False,
     )
@@ -234,6 +250,7 @@ def _(mo, paths):
 @app.cell
 def _(duckdb_df, load_data):
     data = load_data.load_noaa_data(duckdb_df.df())
+    data
     return (data,)
 
 
