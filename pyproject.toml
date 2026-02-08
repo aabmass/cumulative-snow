@@ -14,7 +14,12 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["basedpyright>=1.37.1", "pyqt5>=5.15.11", "ruff>=0.9.6"]
+dev = [
+    "basedpyright>=1.37.1",
+    "pyqt5>=5.15.11",
+    "ruff>=0.9.6",
+    "pytest-playwright>=0.7.2",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.26,<0.10.0"]
