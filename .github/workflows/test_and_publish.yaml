@@ -41,7 +41,7 @@ jobs:
           path: build/
 
   deploy:
-    if: github.event.name == 'push'
+    if: ${{ github.event_name == 'push' }}
     needs: [test, build]
     runs-on: ubuntu-latest
     environment:
