@@ -18,7 +18,10 @@ jobs:
           uv sync
           uv run playwright install --with-deps
       - name: Test
-        run: uv run pytest --tracing=retain-on-failure
+        run: >
+          uv run pytest -v
+            --tracing=retain-on-failure
+            --screenshot=only-on-failure
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
