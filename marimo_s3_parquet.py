@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.19.7"
+__generated_with = "0.19.11"
 app = marimo.App(width="full", sql_output="native")
 
 
@@ -117,7 +117,13 @@ def _(table):
 
 
 @app.cell
-def _(mo, px, stations_df):
+def _():
+    plotly_config = {"toImageButtonOptions": {"format": "svg"}}
+    return (plotly_config,)
+
+
+@app.cell
+def _(mo, plotly_config, px, stations_df):
     mo.stop(stations_df.is_empty())
     # Create the figure
     _fig = px.scatter_map(
@@ -144,7 +150,9 @@ def _(mo, px, stations_df):
     # del _fig
 
     # Wrap it in a marimo UI element
-    map_selector = mo.ui.plotly(_fig, label="Choose a station by map (zoom and click)")
+    map_selector = mo.ui.plotly(
+        _fig, label="Choose a station by map (zoom and click)", config=plotly_config
+    )
 
     # Display the map
     map_selector
@@ -186,10 +194,12 @@ def _(station_dropdown):
 
 
 @app.cell
-def _(data, mo, plot):
-    _continous = mo.ui.plotly(plot.plot_continuous(data))
-    _overlapping_all = (mo.ui.plotly(fig) for fig in plot.plot_overlapping(data))
-    _monthly = mo.ui.plotly(plot.plot_monthly_averages(data))
+def _(data, mo, plot, plotly_config):
+    _continous = mo.ui.plotly(plot.plot_continuous(data), config=plotly_config)
+    _overlapping_all = (
+        mo.ui.plotly(fig, config=plotly_config) for fig in plot.plot_overlapping(data)
+    )
+    _monthly = mo.ui.plotly(plot.plot_monthly_averages(data), config=plotly_config)
 
     mo.vstack([_continous, *_overlapping_all, _monthly])
     return
@@ -242,7 +252,7 @@ def _(mo, paths, pivoted_data):
             ID,
             DATE;
         """,
-        output=False,
+        output=False
     )
     return (duckdb_df,)
 
@@ -367,6 +377,7 @@ def _(mo, os, urllib):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         urllib.request.urlretrieve(url, path)
         return path
+
     return (download_parquet,)
 
 

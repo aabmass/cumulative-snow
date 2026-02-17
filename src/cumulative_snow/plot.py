@@ -1,8 +1,8 @@
 from textwrap import dedent
 
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import pandas as pd
 
 from cumulative_snow import load_data
 from cumulative_snow.args import Args
