@@ -1,30 +1,35 @@
-# Cumulative snow
+# NOAA GCHN cumulative snowfall
 
-I couldn't find any graphs like this online, but NOAA has the data.
+https://aabmass.github.io/cumulative-snow
 
-## Usage
+A [Marimo](https://marimo.io/) notebook for visualizing annual snowfall over time for climate stations in [NOAA's GHCNd
+dataset](https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily).
+This notebook can run entirely [in the browser with WASM](https://docs.marimo.io/guides/wasm/), querying data from the [AWS S3 hosted
+Registry of Open Data](https://registry.opendata.aws/noaa-ghcn/).
 
-Download a data set from [NOAA](https://www.ncdc.noaa.gov/cdo-web/search?datasetid=DAILY_SUMMARIES#) and save the CSV. Use the CLI:
+## Development
 
-```
-# Usage
-uv run main.py --help
+Pull requests are welcome. Edit the notebook with
 
-# Plot and show matplotlib window
-uv run main.py datasets/boston_logan_snowfall.csv
-
-# Or save as an image (add the extension you want)
-uv run main.py \
-    datasets/boston_logan_snowfall.csv \
-    --start_year=2010 \
-    --output_path=boston_logan.pdf
+```sh
+uv run marimo edit marimo_s3_parquet.py
 ```
 
-An example rendered interactive HTML output https://aabmass.github.io/cumulative-snow/www/boston.html. The figures look like
-![](./www/boston.html.0.svg)
-![](./www/boston.html.1.svg)
-![](./www/boston.html.2.svg)
-![](./www/boston.html.3.svg)
-![](./www/boston.html.4.svg)
-![](./www/boston.html.5.svg)
+This runs the notebook with a regular python kernel (not WASM). Because Marimo
+WASM notebooks are a bit finicky, there is a
+[Playwright](https://playwright.dev/python/docs/intro) test suite that runs the
+notebook in a real browser:
 
+```sh
+# --headed will show the actual browser
+uv run pytest -v -s --log-level=info --headed
+```
+
+## Sample images
+
+![](./samples/map.svg)
+![](./samples/cumulative.svg)
+![](./samples/cumulative-overlapping.svg)
+![](./samples/scatter.svg)
+![](./samples/heamap-by-week.svg)
+![](./samples/avgs.svg)
